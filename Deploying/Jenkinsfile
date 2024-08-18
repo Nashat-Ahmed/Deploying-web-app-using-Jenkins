@@ -1,20 +1,67 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_CREDENTIALS_ID = 'nashaat111'  
+        DOCKER_IMAGE = "nashaat111/webapp:v0"
+    }
+
     stages {
-        stage('Build') {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/Nashat-Ahmed/simpleCI-CD.git'  
+            }
+        }
+        stage('Build Docker Image') {
             steps {
                 script {
-                    def image = docker.build("nashaat111/webapp:v0")
-                    image.push()
+                    def image = docker.build("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
                 }
             }
         }
-        stage('Deploy') {
+        stage('Run Tests') {
             steps {
-                sh 'kubectl apply -f deployment.yml'
+                script {
+                    def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
+                    image.inside {
+                        sh 'curl -o /dev/null -s -w "%{http_code}\\n" http://localhost:80 | grep 200'
+                    }
+                }
+            }
+        }
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('', nashaat111) {
+                        echo 'Logged in to Docker Hub'
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('', nashaat111) {
+                        def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
+                        image.push()
+                    }
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh 'kubectl apply -f deployment.yml'
+                }
             }
         }
     }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
 }
-
