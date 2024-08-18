@@ -5,7 +5,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    def image = docker.build("your-dockerhub-username/webapp")
+                    def image = docker.build("nashaat111/webapp:v0")
                     image.push()
                 }
             }
