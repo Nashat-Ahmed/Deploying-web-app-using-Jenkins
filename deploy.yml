@@ -1,0 +1,16 @@
+- name: Deploy web application
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Ensure the /var/www/html directory exists
+      file:
+        path: /var/www/html
+        state: directory
+        mode: '0755'
+
+    - name: Copy web application to target
+      copy:
+        src: ./index.html
+        dest: /var/www/html/index.html
+        mode: '0644'
+
