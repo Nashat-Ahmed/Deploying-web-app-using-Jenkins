@@ -1,6 +1,5 @@
 pipeline {
     agen any
-
     stages {
         stage('Clone Repository') {
             steps {
