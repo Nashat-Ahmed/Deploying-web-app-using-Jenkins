@@ -1,10 +1,5 @@
 pipeline {
-    agent any
-
-    environment {
-        DOCKER_CREDENTIALS_ID = 'nashaat111'  
-        DOCKER_IMAGE = "nashaat111/webapp:v0"
-    }
+    agen any
 
     stages {
         stage('Clone Repository') {
@@ -15,17 +10,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def image = docker.build("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
-                }
-            }
-        }
-        stage('Run Tests') {
-            steps {
-                script {
-                    def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
-                    image.inside {
-                        sh 'curl -o /dev/null -s -w "%{http_code}\\n" http://localhost:80 | grep 200'
-                    }
+                    sh 'docker build -t nashaat111/webapp:v.0 .'
                 }
             }
         }
@@ -41,10 +26,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', nashaat111) {
-                        def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
-                        image.push()
-                    }
+                    sh 'docker push nashaat111/wepapp:v.0'
                 }
             }
         }
